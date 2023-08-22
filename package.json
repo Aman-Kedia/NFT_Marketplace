@@ -18,6 +18,7 @@
     "dotenv": "^16.3.1",
     "ethereum-waffle": "^4.0.10",
     "ethers": "^5.7.2",
+    "file-type": "^18.5.0",
     "formidable": "^3.5.0",
     "hardhat": "^2.17.1",
     "next": "13.4.16",

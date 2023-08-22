@@ -1,7 +1,11 @@
-import { ethers } from "ethers"
-import { useEffect, useState } from "react";
+import axios from 'axios'
+import { ethers } from 'ethers'
+import { useEffect, useState } from 'react'
 import Web3Modal from 'web3modal'
+import { NFTStorage, File } from 'nft.storage'
 
+const API_KEY = process.env.NEXT_PUBLIC_IPFS_API_KEY
+const client = new NFTStorage({ token: API_KEY })
 const nftMarketplaceAddress = process.env.NEXT_PUBLIC_NFT_MARKETPLACE_ADDRESS
 
 export default function Mint() {
@@ -12,6 +16,7 @@ export default function Mint() {
         price: "",
     });
     const [image, setImage] = useState(null)
+    const [imageBuffer, setImageBuffer] = useState(null)
 
     useEffect(() => {
         document.title = "Mint"
@@ -28,11 +33,11 @@ export default function Mint() {
             body: formData,
         })
         if (response.ok) {
-            // Handle success, e.g., show a success message
-            console.log('Image uploaded and processed successfully');
+	    const meta = await axios.get('http://20.207.204.243/api/image-buffer')
+	    setImageBuffer(meta.data.buffer.data)
         } else {
             // Handle error, e.g., show an error message
-            console.error('Error uploading and processing image');
+            console.error('Error uploading and processing image')
         }
     }
 
@@ -102,9 +107,9 @@ export default function Mint() {
                     onChange={handleImageChange}
                 />
 
-                {/* {fileUrl && (
-                    <img className="rounded mt-4" width="350" src={fileUrl} />
-                )} */}
+                {image && (
+                    <img className="rounded mt-4" width="350" src={image} />
+                )}
 
                 <button
                     onClick={validate}
