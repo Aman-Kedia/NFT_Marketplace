@@ -28,13 +28,21 @@ export default function Mint() {
         // setImage(selectedImage)
         const formData = new FormData()
         formData.append('image', selectedImage)
-        const response = await fetch('/api/process-image', {
-            method: 'POST',
+        const response = await axios.post('/api/process-image', {
             body: formData,
         })
         if (response.ok) {
-	    const meta = await axios.get('http://20.207.204.243/api/image-buffer')
-	    setImageBuffer(meta.data.buffer.data)
+	    // const meta = await axios.get('http://20.207.204.243/api/image-buffer')
+	    // setImageBuffer(meta.data.buffer.data)
+	    // const file = new File(['/home/amankedia1402/NFT_Marketplace/nft.png'], 'nft', { type: 'image/png' })
+            // const added = await client.storeBlob(file)
+            // const added = await client.store({
+            //   name: 'test',
+            //   description: 'test description',
+            //   image: file,
+            // })
+            // console.log(added)
+	    console.log("Image processed successfully.")
         } else {
             // Handle error, e.g., show an error message
             console.error('Error uploading and processing image')
