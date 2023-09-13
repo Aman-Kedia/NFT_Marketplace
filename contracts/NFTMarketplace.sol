@@ -27,6 +27,7 @@ contract NFTMarketplace is ERC721URIStorage {
         uint256 endTime;
         uint256 basePrice;
         uint256 lastBidPrice;
+        uint256 quickBuyPrice;
     }
 
     struct Bidder {
@@ -114,6 +115,7 @@ contract NFTMarketplace is ERC721URIStorage {
     function auctionToken(
         uint256 _tokenId,
         uint256 _basePrice,
+        uint256 _quickBuyPrice,
         uint256 _days
     ) external payable {
         require(idToMintedToken[_tokenId].approvedStatus == 2);
@@ -130,7 +132,8 @@ contract NFTMarketplace is ERC721URIStorage {
             block.timestamp,
             block.timestamp + (_days * (1 days)),
             _basePrice,
-            _basePrice
+            _basePrice,
+            _quickBuyPrice
         );
     }
 
@@ -145,6 +148,34 @@ contract NFTMarketplace is ERC721URIStorage {
             Bidder(_tokenId, _price, payable(msg.sender))
         );
         idToAuctionToken[_tokenId].lastBidPrice = _price;
+    }
+
+    function quickBuyToken(uint256 _tokenId) external payable {
+        uint256 price = idToAuctionToken[_tokenId].quickBuyPrice;
+
+        require(idToAuctionToken[_tokenId].endTime >= block.timestamp);
+        require(msg.value == price);
+        require(idToMintedToken[_tokenId].isAuctioned == true);
+        require(msg.sender != idToMintedToken[_tokenId].seller);
+
+        for (uint256 i = 0; i < idToBidders[_tokenId].length; i++) {
+            payable(idToBidders[_tokenId][i].bidder).transfer(
+                idToBidders[_tokenId][i].price
+            );
+        }
+
+        _transfer(_ownerOf(_tokenId), msg.sender, _tokenId);
+
+        uint256 royaltyFee = (price * 10) / 100;
+        payable(idToMintedToken[_tokenId].creator).transfer(royaltyFee);
+        payable(idToMintedToken[_tokenId].seller).transfer(price - royaltyFee);
+
+        idToMintedToken[_tokenId].isAuctioned = false;
+        idToMintedToken[_tokenId].price = idToAuctionToken[_tokenId]
+            .quickBuyPrice;
+
+        delete idToAuctionToken[_tokenId];
+        delete idToBidders[_tokenId];
     }
 
     function checkTokenAuction() external {
