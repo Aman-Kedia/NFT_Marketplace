@@ -1,8 +1,10 @@
 import axios from "axios"
 import { useEffect, useState } from "react"
 import { ethers } from "ethers"
-import Web3Modal from 'web3modal'
+import Web3Modal from "web3modal"
+import NftCard from "../components/NftCard"
 
+import NFTMarketplace from "../artifacts/contracts/NFTMarketplace.sol/NFTMarketplace.json"
 const nftMarketplaceAddress = process.env.NEXT_PUBLIC_NFT_MARKETPLACE_ADDRESS
 
 export default function Collections() {
@@ -24,22 +26,24 @@ export default function Collections() {
 
     async function loadNFTs() {
         try {
-            const contract = getContract()
+            const contract = await getContract()
+            console.log("contract", contract)
             const data = await contract.fetchOwnedTokens()
+            console.log("data", data)
             const tokens = await Promise.all(data.map(async i => {
                 const tokenURI = await contract.tokenURI(i.tokenId)
                 const metadata = await axios.get(tokenURI)
-                const price = ethers.utils.formatUnits(i.price.toString(), 'ether')
                 const token = {
-                    price,
+                    price: i.price.toString(),
                     tokenId: i.tokenId.toNumber(),
-                    name: metadata.name,
-                    desc: metadata.description,
-                    image: metadata.image
+                    name: metadata.data.name,
+                    desc: metadata.data.description,
+                    image: metadata.data.image
                 }
                 return token
             }
             ))
+            console.log(tokens)
             setNfts(tokens)
         }
         catch (error) {
@@ -49,7 +53,7 @@ export default function Collections() {
 
     async function reSellToken(tokenId, newPrice) {
         try {
-            const contract = getContract()
+            const contract = await getContract()
             const price = ethers.utils.parseUnits(newPrice, 'ether')
             let listingFee = await contract.MINTING_FEE()
             listingFee = listingFee.toString()
@@ -62,8 +66,17 @@ export default function Collections() {
     }
 
     return (
-        <>
-        My Collections
-        </>
+        <div className="dark:bg-slate-800 flex p-4 min-h-screen">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {Boolean(!nfts.length) && (
+                    <p className="text-white text-2xl">No Nfts owned</p>
+                )}
+                {Boolean(nfts.length) && (
+                    nfts.map((nft, i) => (
+                        <NftCard key={i} nft={nft} reSellToken={reSellToken} pageName='collections' />
+                    ))
+                )}
+            </div>
+        </div >
     )
 }
