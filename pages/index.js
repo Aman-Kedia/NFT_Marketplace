@@ -1,8 +1,10 @@
 import axios from "axios"
 import { useEffect, useState } from "react"
 import { ethers } from "ethers"
-import Web3Modal from 'web3modal'
+import Web3Modal from "web3modal"
+import NftCard from "../components/NftCard"
 
+import NFTMarketplace from "../artifacts/contracts/NFTMarketplace.sol/NFTMarketplace.json"
 const nftMarketplaceAddress = process.env.NEXT_PUBLIC_NFT_MARKETPLACE_ADDRESS
 
 export default function Home() {
@@ -23,15 +25,16 @@ export default function Home() {
         const metadata = await axios.get(tokenURI)
         const price = ethers.utils.formatUnits(i.price.toString(), 'ether')
         const token = {
-          price,
+          price: price,
           tokenId: i.tokenId.toNumber(),
-          name: metadata.name,
-          desc: metadata.description,
-          image: metadata.image
+          name: metadata.data.name,
+          desc: metadata.data.description,
+          image: metadata.data.image
         }
         return token
       }
       ))
+      console.log(tokens)
       setNfts(tokens)
     }
     catch (error) {
@@ -39,19 +42,15 @@ export default function Home() {
     }
   }
 
-  async function buyNft(tokenId) {
+  async function buyNft(tokenId, nftPrice) {
     try {
-      // if (typeof web3 == 'undefined') {
-      //   throw "Metamask Wallet Not Found"
-      // }
       const web3Modal = new Web3Modal()
       const connection = await web3Modal.connect()
       const provider = new ethers.providers.Web3Provider(connection)
       const signer = provider.getSigner()
       const contract = new ethers.Contract(nftMarketplaceAddress, NFTMarketplace.abi, signer)
-      const price = ethers.utils.parseUnits(nft.price.toString(), 'ether')
-      setLoading(null)
-      const transaction = await contract.buyToken(nft.tokenId, {
+      const price = ethers.utils.parseUnits(nftPrice.toString(), 'ether')
+      const transaction = await contract.buyToken(tokenId, {
         value: price
       })
       await transaction.wait()
@@ -62,17 +61,17 @@ export default function Home() {
   }
 
   return (
-    <div className="bg-blue-200 flex">
-      <div className="border rounded-xl overflow-hidden m-4">
-        <img src="https://image.binance.vision/editor-uploads-original/9c15d9647b9643dfbc5e522299d13593.png" width={300} height={300} />
-        <div className="bg-red-100">
-          <p className="px-2 pt-2 text-xl">Bayc</p>
-          <p className="px-2 pt-1 text-md">Bored ape yatch club</p>
-          <p className="px-2 pt-1 text-xl">0.4 MATIC</p>
-        </div>
-        <button className="p-2 bg-yellow-200 w-full">Buy</button>
+    <div className="dark:bg-slate-800 flex p-4" style={{ minHeight: '89vh' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {Boolean(!nfts.length) && (
+          <p className="text-white text-2xl">No Nfts</p>
+        )}
+        {Boolean(nfts.length) && (
+          nfts.map((nft, i) => (
+            <NftCard key={i} nft={nft} buyNft={buyNft} pageName={'index'} />
+          ))
+        )}
       </div>
-    </div>
+    </div >
   )
 }
-
