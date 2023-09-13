@@ -1,9 +1,10 @@
-import axios from 'axios'
-import { ethers } from 'ethers'
-import { useEffect, useState } from 'react'
-import Web3Modal from 'web3modal'
-import { NFTStorage, File } from 'nft.storage'
+import axios from "axios"
+import { ethers } from "ethers"
+import { useEffect, useState } from "react"
+import Web3Modal from "web3modal"
+import { NFTStorage, File } from "nft.storage"
 
+import NFTMarketplace from "../artifacts/contracts/NFTMarketplace.sol/NFTMarketplace.json"
 const API_KEY = process.env.NEXT_PUBLIC_IPFS_API_KEY
 const client = new NFTStorage({ token: API_KEY })
 const nftMarketplaceAddress = process.env.NEXT_PUBLIC_NFT_MARKETPLACE_ADDRESS
@@ -16,7 +17,7 @@ export default function Mint() {
         price: "",
     });
     const [image, setImage] = useState(null)
-    const [imageBuffer, setImageBuffer] = useState(null)
+    // const [imageBuffer, setImageBuffer] = useState(null)
 
     useEffect(() => {
         document.title = "Mint"
@@ -32,9 +33,9 @@ export default function Mint() {
             body: formData,
         })
         if (response.ok) {
-	    // const meta = await axios.get('http://20.207.204.243/api/image-buffer')
-	    // setImageBuffer(meta.data.buffer.data)
-	    // const file = new File(['/home/amankedia1402/NFT_Marketplace/nft.png'], 'nft', { type: 'image/png' })
+            // const meta = await axios.get('http://20.207.204.243/api/image-buffer')
+            // setImageBuffer(meta.data.buffer.data)
+            // const file = new File(['/home/amankedia1402/NFT_Marketplace/nft.png'], 'nft', { type: 'image/png' })
             // const added = await client.storeBlob(file)
             // const added = await client.store({
             //   name: 'test',
@@ -42,7 +43,7 @@ export default function Mint() {
             //   image: file,
             // })
             // console.log(added)
-	    console.log("Image processed successfully.")
+            console.log("Image processed successfully.")
         } else {
             // Handle error, e.g., show an error message
             console.error('Error uploading and processing image')
@@ -71,7 +72,7 @@ export default function Mint() {
     }
 
     return (
-        <div className="bg-blue-400">
+        <div className="dark:bg-slate-800">
             <div className="flex flex-col opacity-100" style={{ marginLeft: "5%", marginRight: "10%" }}>
                 <p className="mt-12 text-left font-bold text-white text-3xl" style={{ fontFamily: "poppins" }}>Mint NFT</p>
                 <p className="mt-6 text-left text-white text-base" style={{ fontFamily: "poppins" }}>Name</p>
